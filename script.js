@@ -1,6 +1,7 @@
 /* =========================================================
    DIGITAL TIMER
-   NIXIE TUBE TIMER
+   NIXIE TIMER
+   script.js 完成版
    ========================================================= */
 
 
@@ -35,73 +36,124 @@ const resetButton =
 const timeButtons =
     document.querySelectorAll(".time-button");
 
-const colonDots =
-    document.querySelectorAll(".colon-dot");
+
+/* =========================================================
+   4桁
+   ---------------------------------------------------------
+   ① 分の十の位
+   ② 分の一の位
+   ③ 秒の十の位
+   ④ 秒の一の位
+   ========================================================= */
+
+const digitElements = [
+
+    minuteTens,     // ①
+    minuteOnes,     // ②
+    secondTens,     // ③
+    secondOnes      // ④
+
+];
 
 
 /* =========================================================
    タイマー変数
    ========================================================= */
 
-/*
-   duration
-   設定された時間（ミリ秒）
-*/
-let duration = 0;
+let totalTime = 0;
 
+let remainingTime = 0;
 
-/*
-   remaining
-   残り時間（ミリ秒）
-*/
-let remaining = 0;
+let timerRunning = false;
 
+let animationFrameId = null;
 
-/*
-   startTime
-   STARTした瞬間の時刻
-*/
-let startTime = 0;
-
-
-/*
-   pausedAt
-   PAUSEしたときの残り時間
-*/
-let pausedAt = 0;
-
-
-/*
-   animationFrame
-   requestAnimationFrameのID
-*/
-let animationFrame = null;
-
-
-/*
-   running
-   タイマーが動作中か
-*/
-let running = false;
-
-
-/*
-   最後に音を鳴らした秒
-*/
-let lastBeepSecond = null;
+let lastFrameTime = 0;
 
 
 /* =========================================================
-   音
+   ランダム表示設定
+   ========================================================= */
+
+/*
+   ランダム表示を開始してから
+   最初の数字が決定し始めるまでの時間。
+
+   0.9秒。
+*/
+
+const RANDOM_START_TIME = 900;
+
+
+/*
+   1つの数字が停止してから
+   次の数字が停止するまで。
+
+   0.5秒。
+*/
+
+const STOP_INTERVAL = 500;
+
+
+/* =========================================================
+   ランダム表示状態
+   ========================================================= */
+
+/*
+   true
+   → その桁は停止済み
+
+   false
+   → その桁はランダム表示中
+*/
+
+let stoppedDigits = [
+
+    false,  // ①
+    false,  // ②
+    false,  // ③
+    false   // ④
+
+];
+
+
+/*
+   ランダム表示用
+   requestAnimationFrame ID
+*/
+
+let randomAnimationId = null;
+
+
+/*
+   ランダム表示中かどうか
+*/
+
+let randomRunning = false;
+
+
+/*
+   前回のランダム更新時刻
+
+   高リフレッシュレート環境でも
+   安定して動作させるために使用する。
+*/
+
+let lastRandomFrameTime = 0;
+
+
+/* =========================================================
+   音声
    ========================================================= */
 
 let audioContext = null;
 
 
-/*
-   短いビープ音
-*/
-function playBeep(duration) {
+/* =========================================================
+   AudioContext取得
+   ========================================================= */
+
+function getAudioContext() {
 
     if (!audioContext) {
 
@@ -114,33 +166,57 @@ function playBeep(duration) {
     }
 
 
-    if (audioContext.state === "suspended") {
+    if (
+        audioContext.state === "suspended"
+    ) {
 
         audioContext.resume();
 
     }
 
 
+    return audioContext;
+
+}
+
+
+/* =========================================================
+   「ピッ」
+   ---------------------------------------------------------
+   残り3秒
+   残り2秒
+   残り1秒
+   ========================================================= */
+
+function playBeep(
+    duration = 0.12
+) {
+
+    const ctx =
+        getAudioContext();
+
+
     const oscillator =
-        audioContext.createOscillator();
+        ctx.createOscillator();
 
     const gain =
-        audioContext.createGain();
+        ctx.createGain();
 
 
     oscillator.connect(gain);
 
     gain.connect(
-        audioContext.destination
+        ctx.destination
     );
 
 
-    oscillator.frequency.value = 700;
+    oscillator.frequency.value =
+        700;
 
 
     gain.gain.setValueAtTime(
         0.4,
-        audioContext.currentTime
+        ctx.currentTime
     );
 
 
@@ -148,7 +224,7 @@ function playBeep(duration) {
 
 
     oscillator.stop(
-        audioContext.currentTime +
+        ctx.currentTime +
         duration
     );
 
@@ -157,181 +233,181 @@ function playBeep(duration) {
 
 /* =========================================================
    終了音
+   ---------------------------------------------------------
+   0秒
+   「ピーーー」
    ========================================================= */
 
-function playFinishBeep() {
+function playEndBeep() {
 
-    if (!audioContext) {
-
-        audioContext =
-            new (
-                window.AudioContext ||
-                window.webkitAudioContext
-            )();
-
-    }
-
-
-    if (audioContext.state === "suspended") {
-
-        audioContext.resume();
-
-    }
+    const ctx =
+        getAudioContext();
 
 
     const oscillator =
-        audioContext.createOscillator();
+        ctx.createOscillator();
 
     const gain =
-        audioContext.createGain();
+        ctx.createGain();
 
 
     oscillator.connect(gain);
 
     gain.connect(
-        audioContext.destination
+        ctx.destination
     );
 
 
-    oscillator.frequency.value = 700;
+    oscillator.frequency.value =
+        700;
 
 
     gain.gain.setValueAtTime(
         0.4,
-        audioContext.currentTime
+        ctx.currentTime
     );
 
 
-    /*
-       1秒間の長い音
-    */
     oscillator.start();
 
+
     oscillator.stop(
-        audioContext.currentTime + 1
+        ctx.currentTime +
+        1.0
     );
 
 }
 
 
 /* =========================================================
-   時間表示
+   4桁を表示
    ========================================================= */
 
-function updateDisplay(time) {
+function setDigits(
+    minutes,
+    seconds
+) {
 
-    /*
-       マイナスにならないようにする
-    */
-    time = Math.max(0, time);
-
-
-    /*
-       残り秒数を切り上げる
-
-       例：
-
-       60.0秒 → 60
-       59.9秒 → 60
-       59.0秒 → 59
-    */
-    const totalSeconds =
-        Math.ceil(time / 1000);
-
-
-    const minutes =
+    const minTens =
         Math.floor(
-            totalSeconds / 60
+            minutes / 10
         );
 
-
-    const seconds =
-        totalSeconds % 60;
-
-
-    const minuteTensValue =
-        Math.floor(minutes / 10);
-
-
-    const minuteOnesValue =
+    const minOnes =
         minutes % 10;
 
+    const secTens =
+        Math.floor(
+            seconds / 10
+        );
 
-    const secondTensValue =
-        Math.floor(seconds / 10);
-
-
-    const secondOnesValue =
+    const secOnes =
         seconds % 10;
 
 
-    /*
-       表示を更新
-    */
     minuteTens.textContent =
-        minuteTensValue;
+        minTens;
 
     minuteOnes.textContent =
-        minuteOnesValue;
+        minOnes;
 
     secondTens.textContent =
-        secondTensValue;
+        secTens;
 
     secondOnes.textContent =
-        secondOnesValue;
+        secOnes;
 
 }
 
 
 /* =========================================================
-   色の更新
+   プログレスバー
    ========================================================= */
 
-function updateColor(time) {
+function updateProgress() {
 
-    if (duration <= 0) {
+    if (
+        totalTime <= 0
+    ) {
+
+        progressBar.style.width =
+            "0%";
+
         return;
+
     }
 
 
     const percentage =
-        (time / duration) * 100;
+        (
+            remainingTime /
+            totalTime
+        ) * 100;
 
 
     /*
-       いったんすべての状態を解除
+       実際の残り時間から
+       常に計算する。
+
+       そのため滑らかに減少する。
     */
 
-    minuteTens.classList.remove(
-        "warning-color",
-        "danger-color"
+    progressBar.style.width =
+        `${percentage}%`;
+
+
+    updateColor(
+        percentage
     );
 
-    minuteOnes.classList.remove(
-        "warning-color",
-        "danger-color"
+}
+
+
+/* =========================================================
+   色変更
+   ========================================================= */
+
+function updateColor(
+    percentage
+) {
+
+    /*
+       数字
+    */
+
+    digitElements.forEach(
+        element => {
+
+            element.classList.remove(
+                "warning-color",
+                "danger-color"
+            );
+
+        }
     );
 
-    secondTens.classList.remove(
-        "warning-color",
-        "danger-color"
-    );
 
-    secondOnes.classList.remove(
-        "warning-color",
-        "danger-color"
-    );
+    /*
+       コロン
+    */
 
+    document
+        .querySelectorAll(".colon-dot")
+        .forEach(
+            dot => {
 
-    colonDots.forEach(dot => {
+                dot.classList.remove(
+                    "colon-warning",
+                    "colon-danger"
+                );
 
-        dot.classList.remove(
-            "colon-warning",
-            "colon-danger"
+            }
         );
 
-    });
 
+    /*
+       プログレスバー
+    */
 
     progressBar.classList.remove(
         "progress-warning",
@@ -341,74 +417,78 @@ function updateColor(time) {
 
     /*
        10%以下
+       赤
     */
 
-    if (percentage <= 10) {
+    if (
+        percentage <= 10
+    ) {
 
-        minuteTens.classList.add(
-            "danger-color"
-        );
+        digitElements.forEach(
+            element => {
 
-        minuteOnes.classList.add(
-            "danger-color"
-        );
+                element.classList.add(
+                    "danger-color"
+                );
 
-        secondTens.classList.add(
-            "danger-color"
-        );
-
-        secondOnes.classList.add(
-            "danger-color"
+            }
         );
 
 
-        colonDots.forEach(dot => {
+        document
+            .querySelectorAll(".colon-dot")
+            .forEach(
+                dot => {
 
-            dot.classList.add(
-                "colon-danger"
+                    dot.classList.add(
+                        "colon-danger"
+                    );
+
+                }
             );
-
-        });
 
 
         progressBar.classList.add(
             "progress-danger"
         );
 
+
+        return;
+
     }
 
 
     /*
-       10%より上、
        50%以下
+       黄色
     */
 
-    else if (percentage <= 50) {
+    if (
+        percentage <= 50
+    ) {
 
-        minuteTens.classList.add(
-            "warning-color"
-        );
+        digitElements.forEach(
+            element => {
 
-        minuteOnes.classList.add(
-            "warning-color"
-        );
+                element.classList.add(
+                    "warning-color"
+                );
 
-        secondTens.classList.add(
-            "warning-color"
-        );
-
-        secondOnes.classList.add(
-            "warning-color"
+            }
         );
 
 
-        colonDots.forEach(dot => {
+        document
+            .querySelectorAll(".colon-dot")
+            .forEach(
+                dot => {
 
-            dot.classList.add(
-                "colon-warning"
+                    dot.classList.add(
+                        "colon-warning"
+                    );
+
+                }
             );
-
-        });
 
 
         progressBar.classList.add(
@@ -421,99 +501,63 @@ function updateColor(time) {
 
 
 /* =========================================================
-   プログレスバー
+   待機
    ========================================================= */
 
-function updateProgress(time) {
+function wait(
+    milliseconds
+) {
 
-    if (duration <= 0) {
+    return new Promise(
+        resolve => {
 
-        progressBar.style.width = "0%";
+            setTimeout(
+                resolve,
+                milliseconds
+            );
 
-        return;
-
-    }
-
-
-    /*
-       残り時間の割合
-
-       開始時：
-       100%
-
-       終了時：
-       0%
-    */
-
-    const percentage =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                (time / duration) * 100
-            )
-        );
-
-
-    progressBar.style.width =
-        percentage + "%";
+        }
+    );
 
 }
 
 
 /* =========================================================
-   3秒・2秒・1秒の音
+   ランダム数字を更新
    ========================================================= */
 
-function checkCountdownSound(time) {
+/*
+   今回の高速化の中心。
+
+   setIntervalではなく
+   requestAnimationFrameを使用する。
+
+   ブラウザが画面を描画する直前に
+   数字を更新するため、
+
+       数字を変更
+          ↓
+       画面描画
+
+   が非常に安定する。
+
+
+   また、停止していない4桁を
+   1回の描画タイミングでまとめて更新する。
+*/
+
+function updateRandomDigits(
+    timestamp
+) {
 
     /*
-       現在の残り秒数
-    */
-    const seconds =
-        Math.ceil(time / 1000);
-
-
-    /*
-       3、2、1秒だけ鳴らす
+       ランダム表示が終了していたら
+       何もしない
     */
 
     if (
-        seconds >= 1 &&
-        seconds <= 3
+        !randomRunning
     ) {
-
-        /*
-           同じ秒で何度も鳴らさない
-        */
-
-        if (
-            lastBeepSecond !== seconds
-        ) {
-
-            playBeep(0.12);
-
-            lastBeepSecond =
-                seconds;
-
-        }
-
-    }
-
-}
-
-
-/* =========================================================
-   タイマー更新
-   ========================================================= */
-
-function timerLoop(timestamp) {
-
-    /*
-       動作していなければ終了
-    */
-
-    if (!running) {
 
         return;
 
@@ -521,113 +565,473 @@ function timerLoop(timestamp) {
 
 
     /*
-       STARTしてからの経過時間
+       4桁すべてを更新。
+
+       停止済みの桁は変更しない。
     */
 
-    const elapsed =
-        performance.now() -
-        startTime;
+    for (
+        let i = 0;
+        i < digitElements.length;
+        i++
+    ) {
+
+        if (
+            stoppedDigits[i]
+        ) {
+
+            continue;
+
+        }
+
+
+        digitElements[i]
+            .textContent =
+            Math.floor(
+                Math.random() * 10
+            );
+
+    }
 
 
     /*
-       残り時間
-
-       ★ここが今回の重要部分
-
-       「残り時間を1秒ずつ減らす」のではなく、
-
-       開始時刻
-       ↓
-       現在時刻
-
-       から正確に計算する
+       次の画面描画で
+       再びランダム数字を表示
     */
 
-    remaining =
-        Math.max(
-            0,
-            duration - elapsed
+    randomAnimationId =
+        requestAnimationFrame(
+            updateRandomDigits
+        );
+
+}
+
+
+/* =========================================================
+   超高速ランダム表示開始
+   ========================================================= */
+
+function startRandomDisplay() {
+
+    /*
+       以前のランダム表示を
+       完全に停止
+    */
+
+    stopRandomDisplay();
+
+
+    /*
+       ランダム表示開始
+    */
+
+    randomRunning = true;
+
+
+    /*
+       ====================================================
+       ★重要
+       ====================================================
+
+       requestAnimationFrameを待たず、
+
+       「時間ボタンを押した瞬間」
+
+       に4桁すべてをランダム数字へ変更する。
+
+       これにより最初の表示が
+       遅れて見える問題を抑える。
+    */
+
+    for (
+        let i = 0;
+        i < digitElements.length;
+        i++
+    ) {
+
+        digitElements[i]
+            .textContent =
+            Math.floor(
+                Math.random() * 10
+            );
+
+    }
+
+
+    /*
+       時刻を記録
+    */
+
+    lastRandomFrameTime =
+        performance.now();
+
+
+    /*
+       すぐにランダムループ開始
+    */
+
+    randomAnimationId =
+        requestAnimationFrame(
+            updateRandomDigits
+        );
+
+}
+
+
+/* =========================================================
+   ランダム表示停止
+   ========================================================= */
+
+function stopRandomDisplay() {
+
+    randomRunning = false;
+
+
+    if (
+        randomAnimationId !== null
+    ) {
+
+        cancelAnimationFrame(
+            randomAnimationId
+        );
+
+        randomAnimationId = null;
+
+    }
+
+}
+
+
+/* =========================================================
+   1桁停止
+   ========================================================= */
+
+function stopDigit(
+    index,
+    value
+) {
+
+    /*
+       ★最重要
+
+       ランダムループより先に
+       停止状態をtrueにする。
+
+       これにより次のフレームから
+       この桁には一切触れない。
+    */
+
+    stoppedDigits[index] =
+        true;
+
+
+    /*
+       正しい数字を表示
+    */
+
+    digitElements[index]
+        .textContent =
+        value;
+
+}
+
+
+/* =========================================================
+   時間設定時のランダム演出
+   ========================================================= */
+
+async function runNumberAnimation(
+    minutes
+) {
+
+    /*
+       ================================================
+       現在のタイマーを停止
+       ================================================
+    */
+
+    timerRunning = false;
+
+
+    if (
+        animationFrameId !== null
+    ) {
+
+        cancelAnimationFrame(
+            animationFrameId
+        );
+
+        animationFrameId = null;
+
+    }
+
+
+    /*
+       ================================================
+       最終的に表示する数字
+       ================================================
+    */
+
+
+    /*
+       ① 分の十の位
+    */
+
+    const digit1 =
+        Math.floor(
+            minutes / 10
         );
 
 
     /*
-       表示更新
+       ② 分の一の位
     */
 
-    updateDisplay(
-        remaining
+    const digit2 =
+        minutes % 10;
+
+
+    /*
+       ③ 秒の十の位
+    */
+
+    const digit3 =
+        0;
+
+
+    /*
+       ④ 秒の一の位
+    */
+
+    const digit4 =
+        0;
+
+
+    /*
+       ================================================
+       すべて未停止に戻す
+       ================================================
+    */
+
+    stoppedDigits = [
+
+        false,  // ①
+
+        false,  // ②
+
+        false,  // ③
+
+        false   // ④
+
+    ];
+
+
+    /*
+       ================================================
+       4桁すべて高速ランダム開始
+       ================================================
+    */
+
+    startRandomDisplay();
+
+
+    /*
+       ================================================
+       高速ランダム表示
+       ================================================
+    */
+
+    await wait(
+        RANDOM_START_TIME
     );
+
+
+    /*
+       ================================================
+       ② 分の一の位を停止
+       ================================================
+    */
+
+    stopDigit(
+        1,
+        digit2
+    );
+
+
+    /*
+       ================================================
+       0.5秒待つ
+       ================================================
+    */
+
+    await wait(
+        STOP_INTERVAL
+    );
+
+
+    /*
+       ================================================
+       ④ 秒の一の位を停止
+       ================================================
+    */
+
+    stopDigit(
+        3,
+        digit4
+    );
+
+
+    /*
+       ================================================
+       0.5秒待つ
+       ================================================
+    */
+
+    await wait(
+        STOP_INTERVAL
+    );
+
+
+    /*
+       ================================================
+       ③ 秒の十の位を停止
+       ================================================
+    */
+
+    stopDigit(
+        2,
+        digit3
+    );
+
+
+    /*
+       ================================================
+       0.5秒待つ
+       ================================================
+    */
+
+    await wait(
+        STOP_INTERVAL
+    );
+
+
+    /*
+       ================================================
+       ① 分の十の位を停止
+       ================================================
+    */
+
+    stopDigit(
+        0,
+        digit1
+    );
+
+
+    /*
+       ================================================
+       すべて停止
+       ================================================
+    */
+
+    stopRandomDisplay();
+
+
+    /*
+       ================================================
+       最終表示を確実に設定
+       ================================================
+    */
+
+    setDigits(
+        minutes,
+        0
+    );
+
+
+    /*
+       ================================================
+       タイマー設定
+       ================================================
+    */
+
+    totalTime =
+        minutes * 60 * 1000;
+
+    remainingTime =
+        totalTime;
 
 
     /*
        プログレスバー
     */
 
-    updateProgress(
-        remaining
-    );
-
-
-    /*
-       色
-    */
-
-    updateColor(
-        remaining
-    );
-
-
-    /*
-       3・2・1秒の音
-    */
-
-    checkCountdownSound(
-        remaining
-    );
-
-
-    /*
-       終了
-    */
-
-    if (remaining <= 0) {
-
-        running = false;
-
-        remaining = 0;
-
-
-        updateDisplay(0);
-
-        updateProgress(0);
-
-        updateColor(0);
-
-
-        /*
-           0秒の終了音
-        */
-
-        playFinishBeep();
-
-
-        animationFrame = null;
-
-        return;
-
-    }
-
-
-    /*
-       次のフレームへ
-    */
-
-    animationFrame =
-        requestAnimationFrame(
-            timerLoop
-        );
+    updateProgress();
 
 }
+
+
+/* =========================================================
+   時間ボタン
+   ========================================================= */
+
+timeButtons.forEach(
+    button => {
+
+        button.addEventListener(
+            "click",
+            async () => {
+
+                /*
+                   ユーザー操作なので
+                   AudioContextを有効化
+                */
+
+                getAudioContext();
+
+
+                /*
+                   選択された時間
+                */
+
+                const minutes =
+                    Number(
+                        button.dataset.minutes
+                    );
+
+
+                /*
+                   選択状態を変更
+                */
+
+                timeButtons.forEach(
+                    b => {
+
+                        b.classList.remove(
+                            "selected"
+                        );
+
+                    }
+                );
+
+
+                button.classList.add(
+                    "selected"
+                );
+
+
+                /*
+                   ランダム数字演出
+                */
+
+                await runNumberAnimation(
+                    minutes
+                );
+
+            }
+        );
+
+    }
+);
 
 
 /* =========================================================
@@ -636,24 +1040,17 @@ function timerLoop(timestamp) {
 
 startButton.addEventListener(
     "click",
-    function () {
+    () => {
 
         /*
-           時間が設定されていない場合
+           時間が設定されていなければ
+           開始しない
         */
 
-        if (duration <= 0) {
-
-            return;
-
-        }
-
-
-        /*
-           すでに動作中なら何もしない
-        */
-
-        if (running) {
+        if (
+            totalTime <= 0 ||
+            remainingTime <= 0
+        ) {
 
             return;
 
@@ -662,129 +1059,45 @@ startButton.addEventListener(
 
         /*
            音声を有効化
-
-           STARTボタンをユーザーが
-           押したタイミングなので
-           ブラウザの音声制限にも対応できる
         */
 
-        if (!audioContext) {
-
-            audioContext =
-                new (
-                    window.AudioContext ||
-                    window.webkitAudioContext
-                )();
-
-        }
-
-
-        if (
-            audioContext.state ===
-            "suspended"
-        ) {
-
-            audioContext.resume();
-
-        }
+        getAudioContext();
 
 
         /*
-           PAUSEから再開する場合
-        */
-
-        if (pausedAt > 0) {
-
-            remaining = pausedAt;
-
-        }
-
-
-        /*
-           ★重要
-
-           STARTを押した瞬間の
-           表示を先に確定する。
-
-           これによって、
-
-           00:10
-             ↓
-           START
-             ↓
-           00:10
-
-           と表示され、
-
-           一瞬
-
-           00:11
-
-           のようになることを防ぐ。
-        */
-
-        updateDisplay(
-            remaining
-        );
-
-
-        updateProgress(
-            remaining
-        );
-
-
-        updateColor(
-            remaining
-        );
-
-
-        /*
-           音の判定をリセット
-        */
-
-        lastBeepSecond = null;
-
-
-        /*
-           現在時刻を記録
-
-           この直後から経過時間を
-           計算する
-        */
-
-        startTime =
-            performance.now() -
-            (duration - remaining);
-
-
-        /*
-           動作開始
-        */
-
-        running = true;
-
-
-        /*
-           古いanimationFrameが
-           残っていればキャンセル
+           すでに動作中なら
+           何もしない
         */
 
         if (
-            animationFrame !== null
+            timerRunning
         ) {
 
-            cancelAnimationFrame(
-                animationFrame
-            );
+            return;
 
         }
 
 
         /*
-           最初のフレームを開始
+           タイマー開始
         */
 
-        animationFrame =
+        timerRunning = true;
+
+
+        /*
+           現在時刻
+        */
+
+        lastFrameTime =
+            performance.now();
+
+
+        /*
+           タイマーループ開始
+        */
+
+        animationFrameId =
             requestAnimationFrame(
                 timerLoop
             );
@@ -794,14 +1107,265 @@ startButton.addEventListener(
 
 
 /* =========================================================
+   タイマーループ
+   ========================================================= */
+
+function timerLoop(
+    timestamp
+) {
+
+    /*
+       停止中なら終了
+    */
+
+    if (
+        !timerRunning
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+       前回から経過した時間
+    */
+
+    const elapsed =
+        timestamp -
+        lastFrameTime;
+
+
+    /*
+       現在時刻を保存
+    */
+
+    lastFrameTime =
+        timestamp;
+
+
+    /*
+       残り時間を減らす
+    */
+
+    remainingTime -=
+        elapsed;
+
+
+    /*
+       マイナス防止
+    */
+
+    if (
+        remainingTime < 0
+    ) {
+
+        remainingTime = 0;
+
+    }
+
+
+    /*
+       ================================================
+       表示する秒数
+       ================================================
+
+       ceilを使うことで、
+
+       START
+       ↓
+       00:59
+
+       のように正しくカウントダウンし、
+
+       00:00
+       ↓
+       00:01
+
+       のような一瞬の逆方向表示を防ぐ。
+    */
+
+    const displaySeconds =
+        Math.ceil(
+            remainingTime / 1000
+        );
+
+
+    /*
+       分
+    */
+
+    const minutes =
+        Math.floor(
+            displaySeconds / 60
+        );
+
+
+    /*
+       秒
+    */
+
+    const seconds =
+        displaySeconds % 60;
+
+
+    /*
+       数字表示
+    */
+
+    setDigits(
+        minutes,
+        seconds
+    );
+
+
+    /*
+       プログレスバー
+    */
+
+    updateProgress();
+
+
+    /*
+       ================================================
+       残り3秒
+       ================================================
+    */
+
+    if (
+        displaySeconds === 3 &&
+        remainingTime > 0
+    ) {
+
+        playBeep(
+            0.12
+        );
+
+    }
+
+
+    /*
+       ================================================
+       残り2秒
+       ================================================
+    */
+
+    if (
+        displaySeconds === 2 &&
+        remainingTime > 0
+    ) {
+
+        playBeep(
+            0.12
+        );
+
+    }
+
+
+    /*
+       ================================================
+       残り1秒
+       ================================================
+    */
+
+    if (
+        displaySeconds === 1 &&
+        remainingTime > 0
+    ) {
+
+        playBeep(
+            0.12
+        );
+
+    }
+
+
+    /*
+       ================================================
+       0秒
+       ================================================
+    */
+
+    if (
+        remainingTime <= 0
+    ) {
+
+        /*
+           0:00を確実に表示
+        */
+
+        remainingTime = 0;
+
+
+        setDigits(
+            0,
+            0
+        );
+
+
+        /*
+           プログレスバー0%
+        */
+
+        progressBar.style.width =
+            "0%";
+
+
+        updateColor(
+            0
+        );
+
+
+        /*
+           タイマー停止
+        */
+
+        timerRunning = false;
+
+
+        animationFrameId =
+            null;
+
+
+        /*
+           終了音
+        */
+
+        playEndBeep();
+
+
+        return;
+
+    }
+
+
+    /*
+       次のフレーム
+    */
+
+    animationFrameId =
+        requestAnimationFrame(
+            timerLoop
+        );
+
+}
+
+
+/* =========================================================
    PAUSE
    ========================================================= */
 
 pauseButton.addEventListener(
     "click",
-    function () {
+    () => {
 
-        if (!running) {
+        /*
+           動作中でなければ何もしない
+        */
+
+        if (
+            !timerRunning
+        ) {
 
             return;
 
@@ -809,62 +1373,27 @@ pauseButton.addEventListener(
 
 
         /*
-           現在の残り時間を保存
+           タイマー停止
         */
 
-        const elapsed =
-            performance.now() -
-            startTime;
-
-
-        remaining =
-            Math.max(
-                0,
-                duration - elapsed
-            );
-
-
-        pausedAt =
-            remaining;
+        timerRunning = false;
 
 
         /*
-           停止
+           アニメーション停止
         */
 
-        running = false;
-
-
         if (
-            animationFrame !== null
+            animationFrameId !== null
         ) {
 
             cancelAnimationFrame(
-                animationFrame
+                animationFrameId
             );
 
-            animationFrame = null;
+            animationFrameId = null;
 
         }
-
-
-        /*
-           停止した瞬間の表示を保持
-        */
-
-        updateDisplay(
-            remaining
-        );
-
-
-        updateProgress(
-            remaining
-        );
-
-
-        updateColor(
-            remaining
-        );
 
     }
 );
@@ -876,175 +1405,98 @@ pauseButton.addEventListener(
 
 resetButton.addEventListener(
     "click",
-    function () {
+    () => {
 
         /*
            タイマー停止
         */
 
-        running = false;
+        timerRunning = false;
 
 
         /*
-           animationFrame停止
+           ランダム表示停止
+        */
+
+        stopRandomDisplay();
+
+
+        /*
+           タイマーアニメーション停止
         */
 
         if (
-            animationFrame !== null
+            animationFrameId !== null
         ) {
 
             cancelAnimationFrame(
-                animationFrame
+                animationFrameId
             );
 
-            animationFrame = null;
+            animationFrameId = null;
 
         }
 
 
         /*
-           設定時間に戻す
+           時間リセット
         */
 
-        remaining = duration;
+        totalTime = 0;
 
-        pausedAt = 0;
+        remainingTime = 0;
 
 
         /*
-           音の状態をリセット
+           停止状態リセット
         */
 
-        lastBeepSecond = null;
+        stoppedDigits = [
+
+            false,
+            false,
+            false,
+            false
+
+        ];
 
 
         /*
-           表示更新
+           数字を0000に戻す
         */
 
-        updateDisplay(
-            remaining
+        setDigits(
+            0,
+            0
         );
 
 
-        updateProgress(
-            remaining
-        );
+        /*
+           プログレスバー
+        */
 
+        progressBar.style.width =
+            "0%";
+
+
+        /*
+           色を初期状態に戻す
+        */
 
         updateColor(
-            remaining
+            100
         );
 
-    }
-);
 
+        /*
+           時間ボタンの選択解除
+        */
 
-/* =========================================================
-   時間選択ボタン
-   ========================================================= */
+        timeButtons.forEach(
+            button => {
 
-timeButtons.forEach(
-    button => {
-
-        button.addEventListener(
-            "click",
-            function () {
-
-                /*
-                   分数
-                */
-
-                const minutes =
-                    Number(
-                        this.dataset.minutes
-                    );
-
-
-                /*
-                   ミリ秒へ変換
-                */
-
-                duration =
-                    minutes *
-                    60 *
-                    1000;
-
-
-                /*
-                   残り時間も同じにする
-                */
-
-                remaining =
-                    duration;
-
-
-                pausedAt = 0;
-
-
-                /*
-                   タイマー停止
-                */
-
-                running = false;
-
-
-                if (
-                    animationFrame !== null
-                ) {
-
-                    cancelAnimationFrame(
-                        animationFrame
-                    );
-
-                    animationFrame = null;
-
-                }
-
-
-                /*
-                   選択状態
-                */
-
-                timeButtons.forEach(
-                    btn => {
-
-                        btn.classList.remove(
-                            "selected"
-                        );
-
-                    }
-                );
-
-
-                this.classList.add(
+                button.classList.remove(
                     "selected"
-                );
-
-
-                /*
-                   音をリセット
-                */
-
-                lastBeepSecond = null;
-
-
-                /*
-                   表示
-                */
-
-                updateDisplay(
-                    remaining
-                );
-
-
-                updateProgress(
-                    remaining
-                );
-
-
-                updateColor(
-                    remaining
                 );
 
             }
@@ -1058,27 +1510,16 @@ timeButtons.forEach(
    初期状態
    ========================================================= */
 
-/*
-   最初は
-
-   00:00
-
-   にする。
-*/
-
-duration = 0;
-
-remaining = 0;
+setDigits(
+    0,
+    0
+);
 
 
-updateDisplay(0);
+progressBar.style.width =
+    "0%";
 
-updateProgress(0);
 
-
-/*
-   duration = 0なので
-   初期色は通常色のまま
-*/
-
-updateColor(0);
+updateColor(
+    100
+);
