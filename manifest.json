@@ -1,7 +1,7 @@
 {
-  "name": "Digital Timer",
+  "name": "NixieTimer Timer",
   "short_name": "Timer",
-  "description": "プロセスバー付き7セグメント表示のデジタルタイマー",
+  "description": "プロセスバー付きニキシー管表示のデジタルタイマー",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#252525",
@@ -19,5 +19,5 @@
       "type": "image/png"
     }
   ],
-  "id": "com.000.digitaltimer"
+  "id": "com.000.NixieTimer"
 }
