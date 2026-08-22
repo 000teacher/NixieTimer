@@ -1,0 +1,1541 @@
+/* =========================================================
+   DIGITAL TIMER
+   NIXIE TUBE STYLE
+   ========================================================= */
+
+
+/* =========================================================
+   全体
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+
+body {
+
+    min-height: 100vh;
+
+    background:
+        radial-gradient(
+            ellipse at center,
+            #352820 0%,
+            #17110d 45%,
+            #070605 80%,
+            #020202 100%
+        );
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    padding: 25px;
+
+    color: #aaa;
+
+    font-family:
+        "Courier New",
+        monospace;
+}
+
+
+/* =========================================================
+   メイン
+   ========================================================= */
+
+.machine {
+
+    width: min(
+        1100px,
+        100%
+    );
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 18px;
+}
+
+
+/* =========================================================
+   金属筐体
+   ========================================================= */
+
+.case {
+
+    padding: 15px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #777,
+            #222 8%,
+            #111 30%,
+            #050505 50%,
+            #292929 90%,
+            #777
+        );
+
+    border:
+        2px solid #777;
+
+    border-radius: 10px;
+
+    box-shadow:
+
+        inset 0 0 0 2px #111,
+
+        inset 0 0 30px #000,
+
+        0 20px 50px
+        rgba(0,0,0,.9);
+}
+
+
+/* =========================================================
+   上部プレート
+   ========================================================= */
+
+.top-plate {
+
+    height: 48px;
+
+    position: relative;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    background:
+        linear-gradient(
+            #303030,
+            #0c0c0c
+        );
+
+    border:
+        1px solid #555;
+}
+
+
+.machine-title {
+
+    color: #a77857;
+
+    font-family:
+        Georgia,
+        serif;
+
+    font-size: 20px;
+
+    letter-spacing: 8px;
+}
+
+
+.model-number {
+
+    position: absolute;
+
+    right: 45px;
+
+    color: #62574f;
+
+    font-size: 8px;
+
+    letter-spacing: 2px;
+}
+
+
+.screw {
+
+    position: absolute;
+
+    width: 11px;
+
+    height: 11px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle at 30% 30%,
+            #aaa,
+            #555 40%,
+            #111
+        );
+
+    border:
+        1px solid #777;
+}
+
+
+.screw-left {
+    left: 15px;
+}
+
+
+.screw-right {
+    right: 15px;
+}
+
+
+/* =========================================================
+   ニキシー管表示部
+   ========================================================= */
+
+.nixie-chamber {
+
+    position: relative;
+
+    min-height: 320px;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 5px;
+
+    padding: 25px 20px;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            ellipse at center,
+            #261308,
+            #0c0805 65%,
+            #020202 100%
+        );
+
+    border: none;
+
+    box-shadow:
+
+        inset 0 0 60px #000,
+
+        inset 0 0 120px
+        rgba(0,0,0,.8);
+}
+
+
+/* =========================================================
+   内部配線
+   ========================================================= */
+
+.internal-wiring {
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+}
+
+
+.wire {
+
+    position: absolute;
+
+    height: 1px;
+
+    background:
+        linear-gradient(
+            to right,
+            transparent,
+            #463326,
+            transparent
+        );
+
+    opacity: .5;
+}
+
+
+.wire-1 {
+
+    width: 90%;
+
+    left: 5%;
+
+    top: 20%;
+}
+
+
+.wire-2 {
+
+    width: 80%;
+
+    left: 10%;
+
+    bottom: 18%;
+}
+
+
+.wire-3 {
+
+    width: 60%;
+
+    left: 20%;
+
+    top: 78%;
+}
+
+
+/* =========================================================
+   数字用ニキシー管
+   ========================================================= */
+
+.tube {
+
+    position: relative;
+
+    width: 145px;
+
+    height: 240px;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   ガラス管
+   ========================================================= */
+
+.tube-glass {
+
+    position: relative;
+
+    width: 125px;
+
+    height: 225px;
+
+    overflow: hidden;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    border-radius:
+        48% / 9%;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(60,45,35,.35),
+            rgba(5,4,3,.92) 15%,
+            rgba(30,12,5,.8) 50%,
+            rgba(5,4,3,.92) 85%,
+            rgba(60,45,35,.35)
+        );
+
+    border:
+        1px solid
+        rgba(150,120,95,.32);
+
+    box-shadow:
+
+        inset 15px 0 25px
+        rgba(255,255,255,.025),
+
+        inset -15px 0 25px
+        rgba(0,0,0,.8),
+
+        inset 0 0 35px #000;
+}
+
+
+/* =========================================================
+   ガラス反射
+   ========================================================= */
+
+.glass-reflection {
+
+    position: absolute;
+
+    z-index: 20;
+
+    top: -10%;
+
+    left: 10%;
+
+    width: 18%;
+
+    height: 120%;
+
+    transform:
+        rotate(12deg);
+
+    background:
+        linear-gradient(
+            to right,
+            transparent,
+            rgba(255,255,255,.08),
+            transparent
+        );
+
+    filter: blur(1px);
+}
+
+
+/* =========================================================
+   ガラス上部反射
+   ========================================================= */
+
+.tube-glass::before {
+
+    content: "";
+
+    position: absolute;
+
+    z-index: 18;
+
+    top: 5px;
+
+    left: 18%;
+
+    right: 18%;
+
+    height: 20px;
+
+    border-radius: 50%;
+
+    border-top:
+        1px solid
+        rgba(255,255,255,.08);
+}
+
+
+/* =========================================================
+   内部電極
+   ========================================================= */
+
+.electrodes {
+
+    position: absolute;
+
+    inset: 0;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+}
+
+
+/* =========================================================
+   消灯している数字
+   ========================================================= */
+
+.electrode {
+
+    position: absolute;
+
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
+    font-size: 175px;
+
+    font-weight: normal;
+
+    transform:
+        scaleX(.82);
+
+    color:
+        rgba(155,82,35,.045);
+
+    text-shadow:
+        0 0 1px
+        rgba(255,120,40,.025);
+}
+
+
+/* =========================================================
+   電極位置
+   ========================================================= */
+
+.e0 {
+
+    transform:
+        translateX(-1px)
+        scaleX(.82);
+}
+
+
+.e1 {
+
+    transform:
+        translateX(1px)
+        scaleX(.82);
+}
+
+
+.e2 {
+
+    transform:
+        translateX(-1px)
+        scaleX(.82);
+}
+
+
+.e3 {
+
+    transform:
+        translateX(1px)
+        scaleX(.82);
+}
+
+
+.e4 {
+
+    transform:
+        translateX(-1px)
+        scaleX(.82);
+}
+
+
+.e5 {
+
+    transform:
+        translateX(1px)
+        scaleX(.82);
+}
+
+
+.e6 {
+
+    transform:
+        translateX(-1px)
+        scaleX(.82);
+}
+
+
+.e7 {
+
+    transform:
+        translateX(1px)
+        scaleX(.82);
+}
+
+
+.e8 {
+
+    transform:
+        translateX(-1px)
+        scaleX(.82);
+}
+
+
+.e9 {
+
+    transform:
+        translateX(1px)
+        scaleX(.82);
+}
+
+
+/* =========================================================
+   点灯数字
+
+   数字の輪郭を白く
+   周囲を強いオレンジ色で発光
+   ========================================================= */
+
+.glowing-digit {
+
+    position: relative;
+
+    z-index: 10;
+
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
+    font-size: 175px;
+
+    font-weight: normal;
+
+    transform:
+        scaleX(.82);
+
+    /*
+       数字本体
+       少し薄いオレンジ
+    */
+
+    color: #f0ad68;
+
+    /*
+       白い輪郭
+       ↓
+       淡い黄色
+       ↓
+       オレンジ
+       ↓
+       周囲へのぼんやりした発光
+    */
+
+    text-shadow:
+
+        /* =================================================
+           数字の白い輪郭
+           ================================================= */
+
+        0 0 1px #ffffff,
+
+        0 0 2px #ffffff,
+
+        0 0 3px #fffef5,
+
+        /* =================================================
+           数字のすぐ周囲
+           ================================================= */
+
+        0 0 5px #fff5d6,
+
+        0 0 8px #ffe0a3,
+
+        /* =================================================
+           オレンジ色
+           ================================================= */
+
+        0 0 12px #ffbd5c,
+
+        0 0 18px #ff9a32,
+
+        /* =================================================
+           ぼんやりした発光
+           ================================================= */
+
+        0 0 28px #ff731c,
+
+        0 0 45px #ff5210,
+
+        /* =================================================
+           ガラス管周囲への発光
+           ================================================= */
+
+        0 0 65px
+        rgba(255,70,10,.90),
+
+        0 0 90px
+        rgba(255,45,0,.70),
+
+        0 0 125px
+        rgba(255,30,0,.45);
+
+    transition:
+
+        color .15s,
+
+        text-shadow .15s;
+}
+
+
+/* =========================================================
+   数字管の上下
+   ========================================================= */
+
+.tube-top {
+
+    position: absolute;
+
+    top: 0;
+
+    width: 65px;
+
+    height: 9px;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            #555,
+            #111
+        );
+
+    opacity: .75;
+}
+
+
+.tube-bottom {
+
+    position: absolute;
+
+    bottom: 0;
+
+    width: 65px;
+
+    height: 9px;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            #111,
+            #555
+        );
+
+    opacity: .75;
+}
+
+
+/* =========================================================
+   コロン用ニキシー管
+   ========================================================= */
+
+.nixie-colon {
+
+    position: relative;
+
+    width: 145px;
+
+    height: 240px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+}
+
+
+/* =========================================================
+   コロンのガラス管
+   ========================================================= */
+
+.colon-glass {
+
+    position: relative;
+
+    width: 125px;
+
+    height: 225px;
+
+    overflow: hidden;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    border-radius:
+        48% / 9%;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(60,45,35,.35),
+            rgba(5,4,3,.92) 15%,
+            rgba(30,12,5,.8) 50%,
+            rgba(5,4,3,.92) 85%,
+            rgba(60,45,35,.35)
+        );
+
+    border:
+        1px solid
+        rgba(150,120,95,.32);
+
+    box-shadow:
+
+        inset 15px 0 25px
+        rgba(255,255,255,.025),
+
+        inset -15px 0 25px
+        rgba(0,0,0,.8),
+
+        inset 0 0 35px #000;
+}
+
+
+/* =========================================================
+   コロンのガラス反射
+   ========================================================= */
+
+.colon-reflection {
+
+    position: absolute;
+
+    z-index: 20;
+
+    top: -10%;
+
+    left: 15%;
+
+    width: 18%;
+
+    height: 120%;
+
+    transform:
+        rotate(12deg);
+
+    background:
+        linear-gradient(
+            to right,
+            transparent,
+            rgba(255,255,255,.08),
+            transparent
+        );
+
+    filter: blur(1px);
+}
+
+
+/* =========================================================
+   コロン発光点
+
+   数字と同じ
+   白い中心 + オレンジの発光
+   ========================================================= */
+
+.colon-dot {
+
+    position: absolute;
+
+    left: 50%;
+
+    width: 26px;
+
+    height: 26px;
+
+    transform:
+        translateX(-50%);
+
+    border-radius: 50%;
+
+    /*
+       数字本体より少し薄い色
+    */
+
+    background: #f0ad68;
+
+    box-shadow:
+
+        /* =================================================
+           白い中心
+           ================================================= */
+
+        0 0 1px #ffffff,
+
+        0 0 2px #ffffff,
+
+        0 0 3px #fffef5,
+
+        /* =================================================
+           近距離の光
+           ================================================= */
+
+        0 0 5px #fff5d6,
+
+        0 0 8px #ffe0a3,
+
+        /* =================================================
+           オレンジ
+           ================================================= */
+
+        0 0 12px #ffbd5c,
+
+        0 0 18px #ff9a32,
+
+        /* =================================================
+           ぼんやりした発光
+           ================================================= */
+
+        0 0 28px #ff731c,
+
+        0 0 45px #ff5210,
+
+        /* =================================================
+           周囲へ広がる光
+           ================================================= */
+
+        0 0 65px
+        rgba(255,70,10,.90),
+
+        0 0 90px
+        rgba(255,45,0,.70),
+
+        0 0 125px
+        rgba(255,30,0,.45);
+
+    transition:
+
+        background .15s,
+
+        box-shadow .15s;
+}
+
+
+/* =========================================================
+   コロン位置
+   ========================================================= */
+
+.colon-top {
+
+    top: 32%;
+}
+
+
+.colon-bottom {
+
+    top: 52%;
+}
+
+
+/* =========================================================
+   コロン管上下
+   ========================================================= */
+
+.colon-top-cap {
+
+    position: absolute;
+
+    top: 0;
+
+    width: 65px;
+
+    height: 9px;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            #555,
+            #111
+        );
+
+    opacity: .75;
+}
+
+
+.colon-bottom-cap {
+
+    position: absolute;
+
+    bottom: 0;
+
+    width: 65px;
+
+    height: 9px;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            #111,
+            #555
+        );
+
+    opacity: .75;
+}
+
+
+/* =========================================================
+   プログレスエリア
+   ========================================================= */
+
+.progress-area {
+
+    padding:
+        8px
+        20px
+        18px;
+}
+
+
+/* =========================================================
+   プログレス目盛り
+   ========================================================= */
+
+.progress-scale {
+
+    display: flex;
+
+    justify-content:
+        space-between;
+
+    margin-bottom: 8px;
+
+    color: #8a7768;
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    letter-spacing: 1px;
+}
+
+
+/* =========================================================
+   プログレストラック
+   ========================================================= */
+
+.progress-track {
+
+    height: 18px;
+
+    overflow: hidden;
+
+    background: #020202;
+
+    border:
+        2px solid #090909;
+
+    box-shadow:
+        inset 0 0 8px #000;
+}
+
+
+/* =========================================================
+   プログレスバー
+   ========================================================= */
+
+.progress-bar {
+
+    width: 0%;
+
+    height: 100%;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #fff2c2,
+            #ffae49,
+            #e35a14
+        );
+
+    box-shadow:
+
+        0 0 5px #ffcc80,
+
+        0 0 15px #ff7925,
+
+        0 0 30px
+        rgba(255,60,0,.65);
+
+    will-change:
+        width;
+
+    transition:
+
+        background .15s,
+
+        box-shadow .15s;
+}
+
+
+/* =========================================================
+   時間設定
+   ========================================================= */
+
+.time-selector {
+
+    padding: 15px;
+
+    background:
+        linear-gradient(
+            #252525,
+            #0b0b0b
+        );
+
+    border:
+        1px solid #4c4c4c;
+
+    box-shadow:
+        inset 0 0 15px #000;
+}
+
+
+.selector-title {
+
+    margin-bottom: 10px;
+
+    text-align: center;
+
+    color: #65594f;
+
+    font-size: 9px;
+
+    letter-spacing: 4px;
+}
+
+
+.time-buttons {
+
+    display: flex;
+
+    justify-content: center;
+
+    flex-wrap: wrap;
+
+    gap: 7px;
+}
+
+
+.time-button {
+
+    min-width: 62px;
+
+    padding: 9px 12px;
+
+    color: #888;
+
+    background:
+        linear-gradient(
+            #2a2a2a,
+            #0b0b0b
+        );
+
+    border:
+        1px solid #555;
+
+    border-radius: 3px;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    cursor: pointer;
+}
+
+
+.time-button:hover {
+
+    color: #ffc17b;
+
+    border-color: #a25b31;
+}
+
+
+.time-button.selected {
+
+    color: #ffd19a;
+
+    border-color: #b66a39;
+
+    background:
+        linear-gradient(
+            #35190b,
+            #100704
+        );
+
+    box-shadow:
+
+        0 0 10px
+        rgba(255,70,10,.25);
+}
+
+
+/* =========================================================
+   操作ボタン
+   ========================================================= */
+
+.control-panel {
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 10px;
+}
+
+
+.control-button {
+
+    min-width: 105px;
+
+    padding: 11px 20px;
+
+    color: #8c8177;
+
+    background:
+        linear-gradient(
+            #292929,
+            #0b0b0b
+        );
+
+    border:
+        1px solid #555;
+
+    border-radius: 3px;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    letter-spacing: 2px;
+
+    cursor: pointer;
+}
+
+
+.control-button:hover {
+
+    color: #ffd19a;
+
+    border-color: #a55b30;
+}
+
+
+.control-button.start {
+
+    color: #ffc17b;
+
+    border-color: #a55b30;
+}
+
+
+/* =========================================================
+   残り時間50%以下
+   数字
+   ========================================================= */
+
+.warning-color {
+
+    color: #ffd64d !important;
+
+    text-shadow:
+
+        /* 白い輪郭 */
+
+        0 0 1px #ffffff,
+
+        0 0 2px #ffffff,
+
+        0 0 4px #fff8c0,
+
+        /* 黄色 */
+
+        0 0 7px #fff0a0,
+
+        0 0 12px #ffc400,
+
+        /* オレンジ */
+
+        0 0 20px #ff9800,
+
+        0 0 32px #ff7a00,
+
+        /* 周囲 */
+
+        0 0 55px
+        rgba(255,160,0,.8),
+
+        0 0 85px
+        rgba(255,100,0,.5);
+}
+
+
+/* =========================================================
+   残り時間50%以下
+   コロン
+   ========================================================= */
+
+.colon-warning {
+
+    background:
+        #ffd64d;
+
+    box-shadow:
+
+        0 0 1px #ffffff,
+
+        0 0 3px #ffffff,
+
+        0 0 6px #fff8c0,
+
+        0 0 10px #fff0a0,
+
+        0 0 15px #ffc400,
+
+        0 0 25px #ff9800,
+
+        0 0 40px #ff7a00,
+
+        0 0 60px
+        rgba(255,160,0,.8),
+
+        0 0 90px
+        rgba(255,100,0,.5);
+}
+
+
+/* =========================================================
+   残り時間50%以下
+   プログレスバー
+   ========================================================= */
+
+.progress-warning {
+
+    background:
+        linear-gradient(
+            to bottom,
+            #fff9a8,
+            #ffd64d,
+            #ff9d00
+        );
+
+    box-shadow:
+
+        0 0 5px #fff0a0,
+
+        0 0 15px #ffc400,
+
+        0 0 30px
+        rgba(255,160,0,.7),
+
+        0 0 50px
+        rgba(255,100,0,.4);
+}
+
+
+/* =========================================================
+   残り時間10%以下
+   数字
+   ========================================================= */
+
+.danger-color {
+
+    color: #ff432d !important;
+
+    text-shadow:
+
+        /* 白い輪郭 */
+
+        0 0 1px #ffffff,
+
+        0 0 2px #ffffff,
+
+        0 0 4px #fff0ed,
+
+        /* 赤 */
+
+        0 0 7px #ffb0a0,
+
+        0 0 12px #ff5c45,
+
+        0 0 20px #ff3215,
+
+        0 0 32px #ff1600,
+
+        /* 周囲 */
+
+        0 0 55px
+        rgba(255,0,0,.8),
+
+        0 0 85px
+        rgba(255,0,0,.5);
+}
+
+
+/* =========================================================
+   残り時間10%以下
+   コロン
+   ========================================================= */
+
+.colon-danger {
+
+    background:
+        #ff432d;
+
+    box-shadow:
+
+        0 0 1px #ffffff,
+
+        0 0 3px #ffffff,
+
+        0 0 6px #fff0ed,
+
+        0 0 10px #ffb0a0,
+
+        0 0 15px #ff5c45,
+
+        0 0 25px #ff3215,
+
+        0 0 40px #ff1600,
+
+        0 0 60px
+        rgba(255,0,0,.8),
+
+        0 0 90px
+        rgba(255,0,0,.5);
+}
+
+
+/* =========================================================
+   残り時間10%以下
+   プログレスバー
+   ========================================================= */
+
+.progress-danger {
+
+    background:
+        linear-gradient(
+            to bottom,
+            #ffb0a0,
+            #ff432d,
+            #d71900
+        );
+
+    box-shadow:
+
+        0 0 5px #ff8b80,
+
+        0 0 15px #ff3215,
+
+        0 0 30px
+        rgba(255,0,0,.75),
+
+        0 0 50px
+        rgba(255,0,0,.45);
+}
+
+
+/* =========================================================
+   スマートフォン
+   ========================================================= */
+
+@media (
+    max-width: 850px
+) {
+
+    body {
+
+        padding: 10px;
+    }
+
+
+    .machine-title {
+
+        font-size: 15px;
+
+        letter-spacing: 5px;
+    }
+
+
+    .model-number {
+
+        display: none;
+    }
+
+
+    .nixie-chamber {
+
+        gap: 0;
+
+        padding:
+            20px 3px;
+
+        min-height: 230px;
+    }
+
+
+    .tube {
+
+        width: 19vw;
+
+        height: 200px;
+    }
+
+
+    .tube-glass {
+
+        width: 17vw;
+
+        height: 190px;
+    }
+
+
+    .electrode,
+    .glowing-digit {
+
+        font-size: 135px;
+    }
+
+
+    .nixie-colon {
+
+        width: 19vw;
+
+        height: 200px;
+    }
+
+
+    .colon-glass {
+
+        width: 17vw;
+
+        height: 190px;
+    }
+
+
+    /* =====================================================
+       スマートフォンのコロン
+       ===================================================== */
+
+    .colon-dot {
+
+        width: 25px;
+
+        height: 25px;
+    }
+
+
+    .colon-top-cap,
+    .colon-bottom-cap {
+
+        width: 45px;
+    }
+
+
+    .tube-top,
+    .tube-bottom {
+
+        width: 45px;
+    }
+
+
+    /* =====================================================
+       プログレス目盛り
+       ===================================================== */
+
+    .progress-scale {
+
+        font-size: 12px;
+    }
+
+
+    /* =====================================================
+       操作ボタン
+       ===================================================== */
+
+    .control-button {
+
+        min-width: 75px;
+
+        padding: 9px 8px;
+    }
+
+}

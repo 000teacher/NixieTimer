@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>DIGITAL TIMER</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<div class="machine">
+
+
+    <!-- =====================================================
+         金属筐体
+         ===================================================== -->
+
+    <div class="case">
+
+
+        <!-- =================================================
+             上部プレート
+             ================================================= -->
+
+        <div class="top-plate">
+
+            <div class="screw screw-left"></div>
+
+            <div class="machine-title">
+                DIGITAL TIMER
+            </div>
+
+            <div class="model-number">
+                NIXIE-TIMER
+            </div>
+
+            <div class="screw screw-right"></div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             ニキシー管表示部
+             ================================================= -->
+
+        <div class="nixie-chamber">
+
+
+            <!-- 内部配線 -->
+
+            <div class="internal-wiring">
+
+                <div class="wire wire-1"></div>
+
+                <div class="wire wire-2"></div>
+
+                <div class="wire wire-3"></div>
+
+            </div>
+
+
+
+            <!-- =============================================
+                 分の十の位
+                 ============================================= -->
+
+            <div class="tube">
+
+                <div class="tube-glass">
+
+                    <div class="glass-reflection"></div>
+
+                    <div class="electrodes">
+
+                        <span class="electrode e0">0</span>
+                        <span class="electrode e1">1</span>
+                        <span class="electrode e2">2</span>
+                        <span class="electrode e3">3</span>
+                        <span class="electrode e4">4</span>
+                        <span class="electrode e5">5</span>
+                        <span class="electrode e6">6</span>
+                        <span class="electrode e7">7</span>
+                        <span class="electrode e8">8</span>
+                        <span class="electrode e9">9</span>
+
+                    </div>
+
+                    <div
+                        id="minute-tens"
+                        class="glowing-digit"
+                    >
+                        0
+                    </div>
+
+                </div>
+
+                <div class="tube-top"></div>
+
+                <div class="tube-bottom"></div>
+
+            </div>
+
+
+
+            <!-- =============================================
+                 分の一の位
+                 ============================================= -->
+
+            <div class="tube">
+
+                <div class="tube-glass">
+
+                    <div class="glass-reflection"></div>
+
+                    <div class="electrodes">
+
+                        <span class="electrode e0">0</span>
+                        <span class="electrode e1">1</span>
+                        <span class="electrode e2">2</span>
+                        <span class="electrode e3">3</span>
+                        <span class="electrode e4">4</span>
+                        <span class="electrode e5">5</span>
+                        <span class="electrode e6">6</span>
+                        <span class="electrode e7">7</span>
+                        <span class="electrode e8">8</span>
+                        <span class="electrode e9">9</span>
+
+                    </div>
+
+                    <div
+                        id="minute-ones"
+                        class="glowing-digit"
+                    >
+                        0
+                    </div>
+
+                </div>
+
+                <div class="tube-top"></div>
+
+                <div class="tube-bottom"></div>
+
+            </div>
+
+
+
+            <!-- =============================================
+                 コロン
+                 ============================================= -->
+
+            <div class="nixie-colon">
+
+                <div class="colon-glass">
+
+                    <div class="colon-reflection"></div>
+
+                    <div
+                        class="colon-dot colon-top"
+                    ></div>
+
+                    <div
+                        class="colon-dot colon-bottom"
+                    ></div>
+
+                </div>
+
+                <div class="colon-top-cap"></div>
+
+                <div class="colon-bottom-cap"></div>
+
+            </div>
+
+
+
+            <!-- =============================================
+                 秒の十の位
+                 ============================================= -->
+
+            <div class="tube">
+
+                <div class="tube-glass">
+
+                    <div class="glass-reflection"></div>
+
+                    <div class="electrodes">
+
+                        <span class="electrode e0">0</span>
+                        <span class="electrode e1">1</span>
+                        <span class="electrode e2">2</span>
+                        <span class="electrode e3">3</span>
+                        <span class="electrode e4">4</span>
+                        <span class="electrode e5">5</span>
+                        <span class="electrode e6">6</span>
+                        <span class="electrode e7">7</span>
+                        <span class="electrode e8">8</span>
+                        <span class="electrode e9">9</span>
+
+                    </div>
+
+                    <div
+                        id="second-tens"
+                        class="glowing-digit"
+                    >
+                        0
+                    </div>
+
+                </div>
+
+                <div class="tube-top"></div>
+
+                <div class="tube-bottom"></div>
+
+            </div>
+
+
+
+            <!-- =============================================
+                 秒の一の位
+                 ============================================= -->
+
+            <div class="tube">
+
+                <div class="tube-glass">
+
+                    <div class="glass-reflection"></div>
+
+                    <div class="electrodes">
+
+                        <span class="electrode e0">0</span>
+                        <span class="electrode e1">1</span>
+                        <span class="electrode e2">2</span>
+                        <span class="electrode e3">3</span>
+                        <span class="electrode e4">4</span>
+                        <span class="electrode e5">5</span>
+                        <span class="electrode e6">6</span>
+                        <span class="electrode e7">7</span>
+                        <span class="electrode e8">8</span>
+                        <span class="electrode e9">9</span>
+
+                    </div>
+
+                    <div
+                        id="second-ones"
+                        class="glowing-digit"
+                    >
+                        0
+                    </div>
+
+                </div>
+
+                <div class="tube-top"></div>
+
+                <div class="tube-bottom"></div>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- =================================================
+             プログレスバー
+             ================================================= -->
+
+        <div class="progress-area">
+
+            <div class="progress-scale">
+
+                <span>0</span>
+                <span>25</span>
+                <span>50</span>
+                <span>75</span>
+                <span>100</span>
+
+            </div>
+
+            <div class="progress-track">
+
+                <div
+                    id="progress-bar"
+                    class="progress-bar"
+                ></div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             時間選択
+             ================================================= -->
+
+        <div class="time-selector">
+
+            <div class="selector-title">
+                TIME
+            </div>
+
+            <div class="time-buttons">
+
+                <button
+                    class="time-button"
+                    data-minutes="1"
+                >
+                    1分
+                </button>
+
+                <button
+                    class="time-button"
+                    data-minutes="2"
+                >
+                    2分
+                </button>
+
+                <button
+                    class="time-button"
+                    data-minutes="3"
+                >
+                    3分
+                </button>
+
+                <button
+                    class="time-button"
+                    data-minutes="4"
+                >
+                    4分
+                </button>
+
+                <button
+                    class="time-button"
+                    data-minutes="5"
+                >
+                    5分
+                </button>
+
+                <button
+                    class="time-button"
+                    data-minutes="10"
+                >
+                    10分
+                </button>
+
+                <button
+                    class="time-button"
+                    data-minutes="15"
+                >
+                    15分
+                </button>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             操作ボタン
+             ================================================= -->
+
+        <div class="control-panel">
+
+            <button
+                id="start-button"
+                class="control-button start"
+            >
+                START
+            </button>
+
+            <button
+                id="pause-button"
+                class="control-button"
+            >
+                PAUSE
+            </button>
+
+            <button
+                id="reset-button"
+                class="control-button"
+            >
+                RESET
+            </button>
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+<script src="script.js?v=3"></script>
+
+</body>
+
+</html>
